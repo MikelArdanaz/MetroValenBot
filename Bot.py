@@ -3,6 +3,8 @@ from telebot import types  # Tipos para la API del bot.
 import requests
 import json
 from Token import TOKEN
+from math import cos, asin, sqrt
+import pandas as pd
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -32,6 +34,10 @@ def command_text_hi(message):
 @bot.message_handler(content_types=['location'])
 def command_text_hi(message):
     print(message.location)
+    stops = pd.read_csv('stops.txt')[['stop_id', 'stop_name', 'stop_lat', 'stop_lon']]
+    bot.send_message(message.chat.id,
+                     'Tu estación más cercana es: ' + closest(stops.to_dict('records'), message.location)['stop_name'])
+    # https://stackoverflow.com/questions/26716616/convert-a-pandas-dataframe-to-a-dictionary
 
 
 @bot.message_handler(func=lambda message: message.text == "Buy me a ticket!")
@@ -68,8 +74,8 @@ def ruta(message, origen):
         stations = json.loads(a)
         print(stations)
         bot.send_message(message.chat.id,
-                         'La estación de origen es:' + str(origen)+ 'Y la estación de destino es:' + str(stations[
-                             'station_code']))
+                         'La estación de origen es:' + str(origen) + 'Y la estación de destino es:' + str(stations[
+                                                                                                              'station_code']))
     except Exception:
         print(Exception)
         bot.reply_to(message, 'oooops Salió Mal :(')
@@ -85,6 +91,26 @@ def numerotarjeta(message):
         bot.send_message(message.chat.id, 'Tiene un saldo de: ' + tarjeta['cardBalance'])
     except Exception:
         bot.reply_to(message, 'oooops Salió Mal :(')
+
+
+def distance(lat1, lon1, lat2, lon2):
+    """
+    Calculates closest latitude and longitude using the Haversine formula. For more information, take a look at:
+    https://stackoverflow.com/questions/41336756/find-the-closest-latitude-and-longitude
+    :param lat1:
+    :param lon1:
+    :param lat2:
+    :param lon2:
+    :return:
+    """
+    p = 0.017453292519943295
+    a = 0.5 - cos((lat2 - lat1) * p) / 2 + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2
+    return 12742 * asin(sqrt(a))
+
+
+def closest(stations, location):
+    return min(stations,
+               key=lambda stat: distance(location.latitude, location.longitude, stat['stop_lat'], stat['stop_lon']))
 
 
 bot.polling()
