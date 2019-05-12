@@ -13,13 +13,13 @@ def send_welcome(message):
     bot.send_document(message.chat.id, 'https://tenor.com/Lmz1.gif')
     markup = types.ReplyKeyboardMarkup()
     itembtn1 = types.KeyboardButton('Balance')
-    locstations = types.KeyboardButton('Estaciones', request_location=True)
-    stations = types.KeyboardButton('Estaciones')
+    locstations = types.KeyboardButton('Ruta', request_location=True)
+    ruta = types.KeyboardButton('Ruta')
     itembtn3 = types.KeyboardButton('Buy me a ticket!')
     if message.chat.type == 'private':
         markup.add(itembtn1, locstations, itembtn3)
     else:
-        markup.add(itembtn1, stations, itembtn3)
+        markup.add(itembtn1, ruta, itembtn3)
     bot.send_message(message.chat.id, "Elige alguna opción", reply_markup=markup)
 
 
@@ -41,12 +41,38 @@ def command_text_hi(message):
     bot.send_document(message.chat.id, 'https://tenor.com/Pw3S.gif')
 
 
-@bot.message_handler(func=lambda message: message.text == "Estaciones")
+@bot.message_handler(func=lambda message: message.text == "Ruta")
 def command_text_hi(message):
-    response = requests.get("https://metrovlcschedule.herokuapp.com/api/v1/stations")
-    a = response.content.decode("utf-8")
-    stations = json.loads(a)
-    bot.send_message(message.chat.id, 'Estaciones ' + str(stations.values()))
+    msg = bot.reply_to(message, 'Introduce la estación de origen')
+    bot.register_next_step_handler(msg, destino)
+
+
+def destino(message):
+    try:
+        response = requests.get("https://metrovlcschedule.herokuapp.com/api/v1/stations/converter/" + message.text)
+        a = response.content.decode("utf-8")
+        stations = json.loads(a)
+        print(stations)
+        # bot.send_message(message.chat.id, 'Estación ' + str(stations['station_code']))
+        msg2 = bot.reply_to(message, 'Introduce la estación de destino')
+        bot.register_next_step_handler(msg2, ruta, stations['station_code'])
+    except Exception:
+        print(Exception)
+        bot.reply_to(message, 'oooops Salió Mal :(')
+
+
+def ruta(message, origen):
+    try:
+        response = requests.get("https://metrovlcschedule.herokuapp.com/api/v1/stations/converter/" + message.text)
+        a = response.content.decode("utf-8")
+        stations = json.loads(a)
+        print(stations)
+        bot.send_message(message.chat.id,
+                         'La estación de origen es:' + str(origen)+ 'Y la estación de destino es:' + str(stations[
+                             'station_code']))
+    except Exception:
+        print(Exception)
+        bot.reply_to(message, 'oooops Salió Mal :(')
 
 
 def numerotarjeta(message):
