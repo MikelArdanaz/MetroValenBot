@@ -3,6 +3,7 @@ from telebot import types  # Tipos para la API del bot.
 import requests
 import json
 from Token import TOKEN
+
 bot = telebot.TeleBot(TOKEN)
 
 
@@ -12,9 +13,13 @@ def send_welcome(message):
     bot.send_document(message.chat.id, 'https://tenor.com/Lmz1.gif')
     markup = types.ReplyKeyboardMarkup()
     itembtn1 = types.KeyboardButton('Balance')
-    itembtn2 = types.KeyboardButton('Estaciones')
+    locstations = types.KeyboardButton('Estaciones', request_location=True)
+    stations = types.KeyboardButton('Estaciones')
     itembtn3 = types.KeyboardButton('Buy me a ticket!')
-    markup.add(itembtn1, itembtn2,itembtn3)
+    if message.chat.type == 'private':
+        markup.add(itembtn1, locstations, itembtn3)
+    else:
+        markup.add(itembtn1, stations, itembtn3)
     bot.send_message(message.chat.id, "Elige alguna opción", reply_markup=markup)
 
 
@@ -24,6 +29,18 @@ def command_text_hi(message):
     bot.register_next_step_handler(msg, numerotarjeta)
 
 
+@bot.message_handler(content_types=['location'])
+def command_text_hi(message):
+    print(message.location)
+
+
+@bot.message_handler(func=lambda message: message.text == "Buy me a ticket!")
+def command_text_hi(message):
+    bot.send_message(message.chat.id,
+                     'Este es un bot gratuito. Sin embargo sería un bonito detalle que entrarás en paypal.me/mikelillo1 y me ayudaras a cargar la TUiN')
+    bot.send_document(message.chat.id, 'https://tenor.com/Pw3S.gif')
+
+
 @bot.message_handler(func=lambda message: message.text == "Estaciones")
 def command_text_hi(message):
     response = requests.get("https://metrovlcschedule.herokuapp.com/api/v1/stations")
@@ -31,11 +48,6 @@ def command_text_hi(message):
     stations = json.loads(a)
     bot.send_message(message.chat.id, 'Estaciones ' + str(stations.values()))
 
-
-@bot.message_handler(func=lambda message: message.text == "Buy me a ticket!")
-def command_text_hi(message):
-    bot.send_message(message.chat.id, 'Este es un bot gratuito. Sin embargo sería un bonito detalle que entrarás en paypal.me/mikelillo1 y me ayudaras a cargar la TUiN')
-    bot.send_document(message.chat.id, 'https://tenor.com/Pw3S.gif')
 
 def numerotarjeta(message):
     try:
