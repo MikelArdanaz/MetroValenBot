@@ -100,7 +100,7 @@ def ruta(message, origen):
                 destino = json.loads(a)
                 bot.send_message(message.chat.id,
                                  'Tren ' + str(i + 1) + ' de ' + origen['station_name'] + ' a ' + destino[
-                                     'station_name'])
+                                     'station_name']+'.\nTe sirven los trenes con destino:\n'+', '.join(horario['journey'][i]['journeyTrains']))
                 bot.send_message(message.chat.id, 'Sus horarios son: ' + str(horario['journey'][i]['journeyHours']))
         else:
             response = requests.get(
@@ -114,9 +114,9 @@ def ruta(message, origen):
             a = response.content.decode("utf-8")
             destino = json.loads(a)
             bot.send_message(message.chat.id, 'Tienes que coger 1 tren de ' + origen['station_name'] + ' a ' + destino[
-                'station_name'] + '. Con una duración total de: ' + str(
+                'station_name'] + '.\nCon una duración total de: ' + str(
                 horario['duration']) + 'minutos')
-            bot.send_message(message.chat.id, 'Tren de: ' + str(horario['journey'][0]['journeyHours']))
+            bot.send_message(message.chat.id, 'Tienes trenes a las: ' + str(horario['journey'][0]['journeyHours'])+'\nTe sirven los trenes con destino: '+', '.join(horario['journey'][0]['journeyTrains']))
     except Exception:
         print(Exception)
         bot.reply_to(message, 'oooops Salió Mal :(')
