@@ -12,7 +12,6 @@ import pytz
 TOKEN = os.getenv("TOKEN")
 bot = telebot.TeleBot(TOKEN)
 Mobilis = {}
-locale.setlocale(locale.LC_TIME, 'es_ES')
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -110,7 +109,7 @@ def ruta(message, origen):
         response = requests.get("https://metrovlcschedule.herokuapp.com/api/v1/stations/converter/" + message.text)
         a = response.content.decode("utf-8")
         stations = json.loads(a)
-        fecha = datetime.fromtimestamp(message.date)
+        fecha = datetime.fromtimestamp(message.date).astimezone(pytz.timezone('Europe/Madrid'))
         response = requests.get(
             "https://metrovlcschedule.herokuapp.com/api/v1/routes?from=" + str(origen) + '&to=' + str(
                 stations['station_code']) + "&date=" + fecha.date().astimezone(pytz.timezone('Europe/Madrid')).strftime('%d/%m/%Y') + "&ihour=" + str(
