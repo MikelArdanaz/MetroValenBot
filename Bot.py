@@ -88,14 +88,33 @@ def ruta(message, origen):
                 len(horario['journey'])) + ' trenes. Con una duración total de: ' + str(
                 horario['duration']) + 'minutos')
             for i in range(0, len(horario['journey'])):
-                bot.send_message(message.chat.id, 'Tren ' + str(i + 1) + 'de' + str(
-                    horario['journey'][i]['journeyFromStation']) + 'a ' + str(
-                    horario['journey'][i]['journeyToStation']))
+                response = requests.get(
+                    "https://metrovlcschedule.herokuapp.com/api/v1/stations/converter/" + str(
+                        horario['journey'][i]['journeyFromStation']))
+                a = response.content.decode("utf-8")
+                origen = json.loads(a)
+                response = requests.get(
+                    "https://metrovlcschedule.herokuapp.com/api/v1/stations/converter/" + str(
+                        horario['journey'][i]['journeyToStation']))
+                a = response.content.decode("utf-8")
+                destino = json.loads(a)
+                bot.send_message(message.chat.id,
+                                 'Tren ' + str(i + 1) + ' de ' + origen['station_name'] + ' a ' + destino[
+                                     'station_name'])
                 bot.send_message(message.chat.id, 'Sus horarios son: ' + str(horario['journey'][i]['journeyHours']))
         else:
-            bot.send_message(message.chat.id, 'Tienes que coger 1 tren de ' + str(
-                horario['journey'][0]['journeyFromStation']) + + 'a ' + str(
-                horario['journey'][0]['journeyToStation']) + 'Con una duración total de: ' + str(
+            response = requests.get(
+                "https://metrovlcschedule.herokuapp.com/api/v1/stations/converter/" + str(
+                    horario['journey'][0]['journeyFromStation']))
+            a = response.content.decode("utf-8")
+            origen = json.loads(a)
+            response = requests.get(
+                "https://metrovlcschedule.herokuapp.com/api/v1/stations/converter/" + str(
+                    horario['journey'][0]['journeyToStation']))
+            a = response.content.decode("utf-8")
+            destino = json.loads(a)
+            bot.send_message(message.chat.id, 'Tienes que coger 1 tren de ' + origen['station_name'] + ' a ' + destino[
+                'station_name'] + '. Con una duración total de: ' + str(
                 horario['duration']) + 'minutos')
             bot.send_message(message.chat.id, 'Tren de: ' + str(horario['journey'][0]['journeyHours']))
     except Exception:
