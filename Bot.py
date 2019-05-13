@@ -7,11 +7,12 @@ import requests
 import telebot  # Librería de la API del bot.
 import os
 from telebot import types  # Tipos para la API del bot.
+import locale
 
 TOKEN = os.getenv("TOKEN")
 bot = telebot.TeleBot(TOKEN)
 Mobilis = {}
-
+locale.setlocale(locale.LC_TIME, 'es_ES')
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
