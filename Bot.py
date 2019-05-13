@@ -1,13 +1,15 @@
+import json
+from datetime import datetime
+from math import cos, asin, sqrt
+
+import pandas as pd
+import requests
 import telebot  # Librería de la API del bot.
 from telebot import types  # Tipos para la API del bot.
-import requests
-import json
 from Token import TOKEN
-from math import cos, asin, sqrt
-from datetime import datetime
-import pandas as pd
 
 bot = telebot.TeleBot(TOKEN)
+Mobilis = {}
 
 
 @bot.message_handler(commands=['start'])
@@ -19,23 +21,54 @@ def send_welcome(message):
     locstations = types.KeyboardButton('Ruta (Ubicación)', request_location=True)
     ruta = types.KeyboardButton('Ruta (Manual)')
     cremaets = types.KeyboardButton('Buy me a ticket!')
+    plano = types.KeyboardButton('Planos')
+    about = types.KeyboardButton('About')
+    borrar = types.KeyboardButton('Borrar mi Móbilis')
     if message.chat.type == 'private':
-        markup.add(balance, locstations, ruta, cremaets)
+        markup.add(balance, locstations, ruta, cremaets, plano, about, borrar)
     else:
-        markup.add(balance, ruta, cremaets)
+        markup.add(balance, ruta, cremaets, plano, about, borrar)
     bot.send_message(message.chat.id, "Elige alguna opción", reply_markup=markup)
 
 
 @bot.message_handler(func=lambda message: message.text == "Balance")
 def command_text_hi(message):
-    msg = bot.reply_to(message, 'Introduce los primeros 10 dígitos de tu tarjeta Móbilis')
-    bot.register_next_step_handler(msg, numerotarjeta)
+    if message.from_user.id in Mobilis:
+        numerotarjeta(message, tarjeta=Mobilis[message.from_user.id])
+    else:
+        msg = bot.reply_to(message, 'Introduce los primeros 10 dígitos de tu tarjeta Móbilis')
+        bot.register_next_step_handler(msg, numerotarjeta)
+
+
+@bot.message_handler(func=lambda message: message.text == "Planos")
+def command_text_hi(message):
+    doc = open('PlanoGeneral_Metrovalencia_2018.pdf', 'rb')
+    bot.send_document(message.chat.id, doc)
+    doc = open('PlanoRed_Metrovalencia_2018.pdf', 'rb')
+    bot.send_document(message.chat.id, doc)
+
+
+@bot.message_handler(func=lambda message: message.text == "Borrar mi Móbilis")
+def command_text_hi(message):
+    if message.from_user.id in Mobilis:
+        Mobilis.pop(message.from_user.id)
+        bot.send_message(message.chat.id, 'Móbilis borrada!')
+
+
+@bot.message_handler(func=lambda message: message.text == "About")
+def command_text_hi(message):
+    bot.send_message(message.chat.id,
+                     'Este Bot ha sido desarrollado por Maria Bellver, Alejandro Sanz y [Mikel Ardanaz]'
+                     '(twitter.com/mikelillo_1)\nSu código se encuentra en este repositorio de '
+                     '[GitHub](https://github.com/MikelArdanaz/TrabajoMLI)\nEn su desarrollo hemos usado la maravillosa'
+                     ' [API](http://metrovlcschedule.tk) (no oficial) de Metrovalencia desarrollada por '
+                     '[Cristian Molina](https://github.com/legomolina)',
+                     parse_mode='Markdown')
 
 
 @bot.message_handler(content_types=['location'])
 def command_text_hi(message):
     stops = pd.read_csv('stops.txt')[['stop_id', 'stop_name', 'stop_lat', 'stop_lon']]
-    print(closest(stops.to_dict('records'), message.location)['stop_name'])
     nearest = closest(stops.to_dict('records'), message.location)
     bot.send_message(message.chat.id,
                      'Tu estación más cercana es: ' + nearest['stop_name'])
@@ -47,7 +80,8 @@ def command_text_hi(message):
 @bot.message_handler(func=lambda message: message.text == "Buy me a ticket!")
 def command_text_hi(message):
     bot.send_message(message.chat.id,
-                     'Este es un bot gratuito. Sin embargo sería un bonito detalle que entrarás en paypal.me/mikelillo1 y me ayudaras a cargar la TUiN')
+                     text='Este es un bot gratuito. Sin embargo sería un bonito detalle que entrarás en '
+                          'paypal.me/mikelillo1 y me ayudaras a cargar la TUiN.')
     bot.send_document(message.chat.id, 'https://tenor.com/Pw3S.gif')
 
 
@@ -62,8 +96,6 @@ def destino(message):
         response = requests.get("https://metrovlcschedule.herokuapp.com/api/v1/stations/converter/" + message.text)
         a = response.content.decode("utf-8")
         stations = json.loads(a)
-        print(stations)
-        # bot.send_message(message.chat.id, 'Estación ' + str(stations['station_code']))
         msg2 = bot.reply_to(message, 'Introduce la estación de destino')
         bot.register_next_step_handler(msg2, ruta, stations['station_code'])
     except Exception:
@@ -76,20 +108,17 @@ def ruta(message, origen):
         response = requests.get("https://metrovlcschedule.herokuapp.com/api/v1/stations/converter/" + message.text)
         a = response.content.decode("utf-8")
         stations = json.loads(a)
-        print(stations)
         fecha = datetime.fromtimestamp(message.date)
-        print(fecha)
         response = requests.get(
             "https://metrovlcschedule.herokuapp.com/api/v1/routes?from=" + str(origen) + '&to=' + str(
                 stations['station_code']) + "&date=" + fecha.date().strftime('%d/%m/%Y') + "&ihour=" + str(
                 fecha.time())[:5] + "&fhour=23:59")
         a = response.content.decode("utf-8")
         horario = json.loads(a)
-        print(horario['journey'][0]['journeyFromStation'])
         if len(horario['journey']) > 1:
             bot.send_message(message.chat.id, 'Tienes que coger ' + str(
                 len(horario['journey'])) + ' trenes. Con una duración total de: ' + str(
-                horario['duration']) + 'minutos')
+                horario['duration']) + ' minutos')
             for i in range(0, len(horario['journey'])):
                 response = requests.get(
                     "https://metrovlcschedule.herokuapp.com/api/v1/stations/converter/" + str(
@@ -103,9 +132,10 @@ def ruta(message, origen):
                 destino = json.loads(a)
                 bot.send_message(message.chat.id,
                                  'Tren ' + str(i + 1) + ' de ' + origen['station_name'] + ' a ' + destino[
-                                     'station_name'] + '.\nTe sirven los trenes con destino:\n' + ', '.join(
-                                     horario['journey'][i]['journeyTrains']))
+                                     'station_name'])
                 bot.send_message(message.chat.id, 'Sus horarios son: ' + str(horario['journey'][i]['journeyHours']))
+                bot.send_message(message.chat.id, 'Te sirven los trenes con destino:' + ', '.join(
+                    horario['journey'][i]['journeyTrains']))
         else:
             response = requests.get(
                 "https://metrovlcschedule.herokuapp.com/api/v1/stations/converter/" + str(
@@ -119,24 +149,32 @@ def ruta(message, origen):
             destino = json.loads(a)
             bot.send_message(message.chat.id, 'Tienes que coger 1 tren de ' + origen['station_name'] + ' a ' + destino[
                 'station_name'] + '.\nCon una duración total de: ' + str(
-                horario['duration']) + 'minutos')
+                horario['duration']) + ' minutos')
             bot.send_message(message.chat.id, 'Tienes trenes a las: ' + str(
-                horario['journey'][0]['journeyHours']) + '\nTe sirven los trenes con destino: ' + ', '.join(
+                horario['journey'][0]['journeyHours']))
+            bot.send_message(message.chat.id, 'Te sirven los trenes con destino: ' + ', '.join(
                 horario['journey'][0]['journeyTrains']))
     except Exception:
         print(Exception)
         bot.reply_to(message, 'oooops Salió Mal :(')
 
 
-def numerotarjeta(message):
+def numerotarjeta(message, tarjeta=None):
     try:
-        response = requests.get("https://metrovlcschedule.herokuapp.com/api/v1/card/" + message.text + "/balance")
-        a = response.content.decode("utf-8")
-        tarjeta = json.loads(a)
-        print(a)
+        if tarjeta:
+            response = requests.get("https://metrovlcschedule.herokuapp.com/api/v1/card/" + str(tarjeta) + "/balance")
+            a = response.content.decode("utf-8")
+            tarjeta = json.loads(a)
+        else:
+            response = requests.get("https://metrovlcschedule.herokuapp.com/api/v1/card/" + message.text + "/balance")
+            a = response.content.decode("utf-8")
+            tarjeta = json.loads(a)
+            if tarjeta['cardZones']:
+                Mobilis[int(message.from_user.id)] = message.text
         bot.send_message(message.chat.id, 'Tu tarjeta: ' + tarjeta['cardZones'])
         bot.send_message(message.chat.id, 'Tiene un saldo de: ' + tarjeta['cardBalance'])
     except Exception:
+        print(Exception)
         bot.reply_to(message, 'oooops Salió Mal :(')
 
 
