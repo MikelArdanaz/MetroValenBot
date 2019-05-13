@@ -103,6 +103,7 @@ def destino(message):
     except Exception:
         print(Exception)
         bot.reply_to(message, 'oooops Salió Mal :(')
+        bot.send_document(message.chat.id, 'https://tenor.com/qKYb.gif')
 
 
 def ruta(message, origen):
@@ -160,6 +161,7 @@ def ruta(message, origen):
     except Exception:
         print(Exception)
         bot.reply_to(message, 'oooops Salió Mal :(')
+        bot.send_document(message.chat.id, 'https://tenor.com/ylHW.gif')
 
 
 def numerotarjeta(message, tarjeta=None):
@@ -179,6 +181,7 @@ def numerotarjeta(message, tarjeta=None):
     except Exception:
         print(Exception)
         bot.reply_to(message, 'oooops Salió Mal :(')
+        bot.send_document(message.chat.id, 'https://tenor.com/u4yf.gif')
 
 
 def distance(lat1, lon1, lat2, lon2):
