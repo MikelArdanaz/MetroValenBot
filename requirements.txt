@@ -46,7 +46,6 @@ geographiclib==1.49
 geopy==1.19.0
 gevent==1.4.0
 glob2==0.6
-gmpy2==2.0.8
 google-api-core==1.9.0
 google-auth==1.6.3
 google-cloud-core==0.29.1
