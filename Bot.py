@@ -15,14 +15,14 @@ def send_welcome(message):
     bot.reply_to(message, "Bienvenido a bordo!")
     bot.send_document(message.chat.id, 'https://tenor.com/Lmz1.gif')
     markup = types.ReplyKeyboardMarkup()
-    itembtn1 = types.KeyboardButton('Balance')
-    locstations = types.KeyboardButton('Ruta', request_location=True)
-    ruta = types.KeyboardButton('Ruta')
-    itembtn3 = types.KeyboardButton('Buy me a ticket!')
+    balance = types.KeyboardButton('Balance')
+    locstations = types.KeyboardButton('Ruta (Ubicación)', request_location=True)
+    ruta = types.KeyboardButton('Ruta (Manual)')
+    cremaets = types.KeyboardButton('Buy me a ticket!')
     if message.chat.type == 'private':
-        markup.add(itembtn1, locstations, itembtn3)
+        markup.add(balance, locstations, ruta, cremaets)
     else:
-        markup.add(itembtn1, ruta, itembtn3)
+        markup.add(balance, ruta, cremaets)
     bot.send_message(message.chat.id, "Elige alguna opción", reply_markup=markup)
 
 
@@ -36,8 +36,11 @@ def command_text_hi(message):
 def command_text_hi(message):
     stops = pd.read_csv('stops.txt')[['stop_id', 'stop_name', 'stop_lat', 'stop_lon']]
     print(closest(stops.to_dict('records'), message.location)['stop_name'])
+    nearest = closest(stops.to_dict('records'), message.location)
     bot.send_message(message.chat.id,
-                     'Tu estación más cercana es: ' + closest(stops.to_dict('records'), message.location)['stop_name'])
+                     'Tu estación más cercana es: ' + nearest['stop_name'])
+    msg2 = bot.reply_to(message, 'Introduce la estación de destino')
+    bot.register_next_step_handler(msg2, ruta, nearest['stop_id'])
     # https://stackoverflow.com/questions/26716616/convert-a-pandas-dataframe-to-a-dictionary
 
 
@@ -48,7 +51,7 @@ def command_text_hi(message):
     bot.send_document(message.chat.id, 'https://tenor.com/Pw3S.gif')
 
 
-@bot.message_handler(func=lambda message: message.text == "Ruta")
+@bot.message_handler(func=lambda message: message.text == "Ruta (Manual)")
 def command_text_hi(message):
     msg = bot.reply_to(message, 'Introduce la estación de origen')
     bot.register_next_step_handler(msg, destino)
@@ -100,7 +103,8 @@ def ruta(message, origen):
                 destino = json.loads(a)
                 bot.send_message(message.chat.id,
                                  'Tren ' + str(i + 1) + ' de ' + origen['station_name'] + ' a ' + destino[
-                                     'station_name']+'.\nTe sirven los trenes con destino:\n'+', '.join(horario['journey'][i]['journeyTrains']))
+                                     'station_name'] + '.\nTe sirven los trenes con destino:\n' + ', '.join(
+                                     horario['journey'][i]['journeyTrains']))
                 bot.send_message(message.chat.id, 'Sus horarios son: ' + str(horario['journey'][i]['journeyHours']))
         else:
             response = requests.get(
@@ -116,7 +120,9 @@ def ruta(message, origen):
             bot.send_message(message.chat.id, 'Tienes que coger 1 tren de ' + origen['station_name'] + ' a ' + destino[
                 'station_name'] + '.\nCon una duración total de: ' + str(
                 horario['duration']) + 'minutos')
-            bot.send_message(message.chat.id, 'Tienes trenes a las: ' + str(horario['journey'][0]['journeyHours'])+'\nTe sirven los trenes con destino: '+', '.join(horario['journey'][0]['journeyTrains']))
+            bot.send_message(message.chat.id, 'Tienes trenes a las: ' + str(
+                horario['journey'][0]['journeyHours']) + '\nTe sirven los trenes con destino: ' + ', '.join(
+                horario['journey'][0]['journeyTrains']))
     except Exception:
         print(Exception)
         bot.reply_to(message, 'oooops Salió Mal :(')
