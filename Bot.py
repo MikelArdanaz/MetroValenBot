@@ -111,6 +111,10 @@ def ruta(message, origen):
         a = response.content.decode("utf-8")
         stations = json.loads(a)
         fecha = datetime.fromtimestamp(message.date).astimezone(pytz.timezone('Europe/Madrid'))
+        bot.send_message(message.chat.id,"https://metrovlcschedule.herokuapp.com/api/v1/routes?from=" + str(origen) + '&to=' + str(
+                stations['station_code']) + "&date=" + fecha.date().astimezone(pytz.timezone('Europe/Madrid')).strftime(
+                '%d/%m/%Y') + "&ihour=" + str(fecha.hour) + ':' + str(fecha.minute)
+            + "&fhour=23:59")
         response = requests.get(
             "https://metrovlcschedule.herokuapp.com/api/v1/routes?from=" + str(origen) + '&to=' + str(
                 stations['station_code']) + "&date=" + fecha.date().astimezone(pytz.timezone('Europe/Madrid')).strftime(
