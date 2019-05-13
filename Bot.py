@@ -5,9 +5,10 @@ from math import cos, asin, sqrt
 import pandas as pd
 import requests
 import telebot  # Librería de la API del bot.
+import os
 from telebot import types  # Tipos para la API del bot.
-from Token import TOKEN
 
+TOKEN = os.getenv("TOKEN")
 bot = telebot.TeleBot(TOKEN)
 Mobilis = {}
 
