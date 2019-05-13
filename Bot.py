@@ -4,6 +4,7 @@ import requests
 import json
 from Token import TOKEN
 from math import cos, asin, sqrt
+from datetime import datetime
 import pandas as pd
 
 bot = telebot.TeleBot(TOKEN)
@@ -33,8 +34,8 @@ def command_text_hi(message):
 
 @bot.message_handler(content_types=['location'])
 def command_text_hi(message):
-    print(message.location)
     stops = pd.read_csv('stops.txt')[['stop_id', 'stop_name', 'stop_lat', 'stop_lon']]
+    print(closest(stops.to_dict('records'), message.location)['stop_name'])
     bot.send_message(message.chat.id,
                      'Tu estación más cercana es: ' + closest(stops.to_dict('records'), message.location)['stop_name'])
     # https://stackoverflow.com/questions/26716616/convert-a-pandas-dataframe-to-a-dictionary
@@ -73,9 +74,30 @@ def ruta(message, origen):
         a = response.content.decode("utf-8")
         stations = json.loads(a)
         print(stations)
-        bot.send_message(message.chat.id,
-                         'La estación de origen es:' + str(origen) + 'Y la estación de destino es:' + str(stations[
-                                                                                                              'station_code']))
+        fecha = datetime.fromtimestamp(message.date)
+        print(fecha)
+        response = requests.get(
+            "https://metrovlcschedule.herokuapp.com/api/v1/routes?from=" + str(origen) + '&to=' + str(
+                stations['station_code']) + "&date=" + fecha.date().strftime('%d/%m/%Y') + "&ihour=" + str(
+                fecha.time())[:5] + "&fhour=23:59")
+        a = response.content.decode("utf-8")
+        horario = json.loads(a)
+        print(horario['journey'][0]['journeyFromStation'])
+        if len(horario['journey']) > 1:
+            bot.send_message(message.chat.id, 'Tienes que coger ' + str(
+                len(horario['journey'])) + ' trenes. Con una duración total de: ' + str(
+                horario['duration']) + 'minutos')
+            for i in range(0, len(horario['journey'])):
+                bot.send_message(message.chat.id, 'Tren ' + str(i + 1) + 'de' + str(
+                    horario['journey'][i]['journeyFromStation']) + 'a ' + str(
+                    horario['journey'][i]['journeyToStation']))
+                bot.send_message(message.chat.id, 'Sus horarios son: ' + str(horario['journey'][i]['journeyHours']))
+        else:
+            bot.send_message(message.chat.id, 'Tienes que coger 1 tren de ' + str(
+                horario['journey'][0]['journeyFromStation']) + + 'a ' + str(
+                horario['journey'][0]['journeyToStation']) + 'Con una duración total de: ' + str(
+                horario['duration']) + 'minutos')
+            bot.send_message(message.chat.id, 'Tren de: ' + str(horario['journey'][0]['journeyHours']))
     except Exception:
         print(Exception)
         bot.reply_to(message, 'oooops Salió Mal :(')
