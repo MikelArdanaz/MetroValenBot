@@ -13,6 +13,7 @@ TOKEN = os.getenv("TOKEN")
 bot = telebot.TeleBot(TOKEN)
 Mobilis = {}
 
+
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     bot.reply_to(message, "Bienvenido a bordo!")
@@ -112,8 +113,9 @@ def ruta(message, origen):
         fecha = datetime.fromtimestamp(message.date).astimezone(pytz.timezone('Europe/Madrid'))
         response = requests.get(
             "https://metrovlcschedule.herokuapp.com/api/v1/routes?from=" + str(origen) + '&to=' + str(
-                stations['station_code']) + "&date=" + fecha.date().astimezone(pytz.timezone('Europe/Madrid')).strftime('%d/%m/%Y') + "&ihour=" + str(
-                fecha.time())[:5] + "&fhour=23:59")
+                stations['station_code']) + "&date=" + fecha.date().astimezone(pytz.timezone('Europe/Madrid')).strftime(
+                '%d/%m/%Y') + "&ihour=" + str(fecha.hour) + ':' + str(fecha.minute)
+            + "&fhour=23:59")
         a = response.content.decode("utf-8")
         horario = json.loads(a)
         if len(horario['journey']) > 1:
