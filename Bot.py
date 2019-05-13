@@ -7,7 +7,7 @@ import requests
 import telebot  # Librería de la API del bot.
 import os
 from telebot import types  # Tipos para la API del bot.
-import locale
+import pytz
 
 TOKEN = os.getenv("TOKEN")
 bot = telebot.TeleBot(TOKEN)
@@ -113,7 +113,7 @@ def ruta(message, origen):
         fecha = datetime.fromtimestamp(message.date)
         response = requests.get(
             "https://metrovlcschedule.herokuapp.com/api/v1/routes?from=" + str(origen) + '&to=' + str(
-                stations['station_code']) + "&date=" + fecha.date().strftime('%d/%m/%Y') + "&ihour=" + str(
+                stations['station_code']) + "&date=" + fecha.date().astimezone(pytz.timezone('Europe/Madrid')).strftime('%d/%m/%Y') + "&ihour=" + str(
                 fecha.time())[:5] + "&fhour=23:59")
         a = response.content.decode("utf-8")
         horario = json.loads(a)

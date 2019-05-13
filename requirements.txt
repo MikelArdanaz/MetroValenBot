@@ -36,6 +36,7 @@ notebook==5.7.8
 numpy==1.16.2
 numpydoc==0.8.0
 pandas==0.24.2
+pytz==2018.9
 pyTelegramBotAPI==3.6.6
 requests==2.21.0
 requests-oauthlib==1.2.0
