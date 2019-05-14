@@ -55,6 +55,9 @@ def command_text_hi(message):
     if message.from_user.id in Mobilis:
         Mobilis.pop(message.from_user.id)
         bot.send_message(message.chat.id, 'Móbilis borrada!')
+    else:
+        bot.send_message(message.chat.id, 'No habías añadido ninguna Móbilis. Tú lo que quieres es volverme loco')
+        bot.send_document(message.chat.id, 'https://tenor.com/vNpv.gif')
 
 
 @bot.message_handler(func=lambda message: message.text == "About")
@@ -82,8 +85,8 @@ def command_text_hi(message):
 @bot.message_handler(func=lambda message: message.text == "Buy me a ticket!")
 def command_text_hi(message):
     bot.send_message(message.chat.id,
-                     text='Este es un bot gratuito. Sin embargo sería un bonito detalle que entrarás en '
-                          'paypal.me/mikelillo1 y me ayudaras a cargar la TUiN.')
+                     text='Este es un bot gratuito. Sin embargo sería un bonito detalle (guiño,guiño)'
+                          ' que entrarás en paypal.me/mikelillo1 y me ayudaras a cargar la TUiN.')
     bot.send_document(message.chat.id, 'https://tenor.com/Pw3S.gif')
 
 
