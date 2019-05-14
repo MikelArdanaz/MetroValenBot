@@ -25,7 +25,7 @@ def send_welcome(message):
     cremaets = types.KeyboardButton('Buy me a ticket!')
     plano = types.KeyboardButton('Planos')
     about = types.KeyboardButton('About')
-    borrar = types.KeyboardButton('Borrar mi Móbilis')
+    borrar = types.KeyboardButton('Olvidar mi Móbilis')
     if message.chat.type == 'private':
         markup.add(balance, locstations, ruta, cremaets, plano, about, borrar)
     else:
@@ -50,11 +50,11 @@ def command_text_hi(message):
     bot.send_document(message.chat.id, doc)
 
 
-@bot.message_handler(func=lambda message: message.text == "Borrar mi Móbilis")
+@bot.message_handler(func=lambda message: message.text == "Olvidar mi Móbilis")
 def command_text_hi(message):
     if message.from_user.id in Mobilis:
         Mobilis.pop(message.from_user.id)
-        bot.send_message(message.chat.id, 'Móbilis borrada!')
+        bot.send_message(message.chat.id, 'Móbilis olvidada!')
     else:
         bot.send_message(message.chat.id, 'No habías añadido ninguna Móbilis. Tú lo que quieres es volverme loco')
         bot.send_document(message.chat.id, 'https://tenor.com/vNpv.gif')
