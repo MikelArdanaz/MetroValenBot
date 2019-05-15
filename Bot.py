@@ -125,7 +125,8 @@ def ruta(message, origen):
             + "&fhour=23:59")
         a = response.content.decode("utf-8")
         horario = json.loads(a)
-        print(horario)
+        print('Hora'+str(fecha.hour))
+        print('Minutos:'+str(fecha.minute))
         if len(horario['journey']) > 1:
             bot.send_message(message.chat.id, 'Tienes que coger ' + str(
                 len(horario['journey'])) + ' trenes. Con una duración total de: ' + str(
