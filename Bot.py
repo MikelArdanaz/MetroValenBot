@@ -121,7 +121,7 @@ def ruta(message, origen):
         response = requests.get(
             "https://metrovlcschedule.herokuapp.com/api/v1/routes?from=" + str(origen) + '&to=' + str(
                 stations['station_code']) + "&date=" + fecha.date().strftime(
-                '%d/%m/%Y') + "&ihour=" + str(fecha.hour) + ':' + str(fecha.minute)
+                '%d/%m/%Y') + "&ihour=" + str(fecha.hour) + ':' + a.strftime('%M')
             + "&fhour=23:59")
         a = response.content.decode("utf-8")
         horario = json.loads(a)
