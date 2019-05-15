@@ -120,13 +120,13 @@ def ruta(message, origen):
         fecha = datetime.fromtimestamp(message.date).astimezone(pytz.timezone('Europe/Madrid'))
         response = requests.get(
             "https://metrovlcschedule.herokuapp.com/api/v1/routes?from=" + str(origen) + '&to=' + str(
-                stations['station_code']) + "&date=" + fecha.date().strftime(
+                stations['station_code']) + "&date=" + fecha.strftime(
                 '%d/%m/%Y') + "&ihour=" + str(fecha.hour) + ':' + fecha.strftime('%M')
             + "&fhour=23:59")
         a = response.content.decode("utf-8")
         horario = json.loads(a)
-        print('Hora'+str(fecha.hour))
-        print('Minutos:'+str(fecha.minute))
+        print('Hora' + str(fecha.hour))
+        print('Minutos:' + str(fecha.minute))
         if len(horario['journey']) > 1:
             bot.send_message(message.chat.id, 'Tienes que coger ' + str(
                 len(horario['journey'])) + ' trenes. Con una duración total de: ' + str(
