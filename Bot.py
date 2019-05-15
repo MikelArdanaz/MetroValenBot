@@ -103,8 +103,11 @@ def destino(message):
         stations = json.loads(a)
         msg2 = bot.reply_to(message, 'Introduce la estación de destino')
         bot.register_next_step_handler(msg2, ruta, stations['station_code'])
-    except Exception:
-        print(Exception)
+    except Exception as e:
+        if hasattr(e, 'message'):
+            print(e.message)
+        else:
+            print(e)
         bot.reply_to(message, 'oooops Salió Mal :(')
         bot.send_document(message.chat.id, 'https://tenor.com/qKYb.gif')
 
@@ -161,8 +164,11 @@ def ruta(message, origen):
                 horario['journey'][0]['journeyHours']))
             bot.send_message(message.chat.id, 'Te sirven los trenes con destino: ' + ', '.join(
                 horario['journey'][0]['journeyTrains']))
-    except Exception:
-        print(Exception)
+    except Exception as e:
+        if hasattr(e, 'message'):
+            print(e.message)
+        else:
+            print(e)
         bot.reply_to(message, 'oooops Salió Mal :(')
         bot.send_document(message.chat.id, 'https://tenor.com/ylHW.gif')
 
@@ -181,8 +187,11 @@ def numerotarjeta(message, tarjeta=None):
                 Mobilis[int(message.from_user.id)] = message.text
         bot.send_message(message.chat.id, 'Tu tarjeta: ' + tarjeta['cardZones'])
         bot.send_message(message.chat.id, 'Tiene un saldo de: ' + tarjeta['cardBalance'])
-    except Exception:
-        print(Exception)
+    except Exception as e:
+        if hasattr(e, 'message'):
+            print(e.message)
+        else:
+            print(e)
         bot.reply_to(message, 'oooops Salió Mal :(')
         bot.send_document(message.chat.id, 'https://tenor.com/u4yf.gif')
 
