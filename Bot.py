@@ -65,7 +65,7 @@ def command_text_hi(message):
     bot.send_message(message.chat.id,
                      'Este Bot ha sido desarrollado por Maria Bellver, Alejandro Sanz y [Mikel Ardanaz]'
                      '(twitter.com/mikelillo_1)\nSu código se encuentra en este repositorio de '
-                     '[GitHub](https://github.com/MikelArdanaz/TrabajoMLI)\nEn su desarrollo hemos usado la maravillosa'
+                     '[GitHub](https://github.com/MikelArdanaz/MetroValenBot)\nEn su desarrollo hemos usado la maravillosa'
                      ' [API](http://metrovlcschedule.tk) (no oficial) de Metrovalencia desarrollada por '
                      '[Cristian Molina](https://github.com/legomolina)',
                      parse_mode='Markdown')
